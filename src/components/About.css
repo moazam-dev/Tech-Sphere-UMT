@@ -1,0 +1,168 @@
+/* General Layout */
+.about-container {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #333;
+    background-color: #f4f4f4;
+    padding: 0.6rem 5.4rem;
+  }
+  
+  /* Hero Section */
+  .hero {
+    margin-top: 11.5rem;
+    background: linear-gradient(135deg, #262826, #090c09); /* Green gradient */
+    color: white;
+    padding: 80px 20px;
+    text-align: center;
+  }
+  
+  .hero h1 {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+  
+  .hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  /* Section Styling */
+  .section {
+    padding: 60px 20px;
+    margin-bottom: 40px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .section-header {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .section-header h2 {
+    font-size: 2.5rem;
+    color: #333;
+  }
+  
+  .section-content {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    text-align: center;
+    color: #555;
+  }
+  
+  /* Core Values Section */
+  .core-values {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+  }
+  
+  .value-item {
+    flex: 1;
+    padding: 20px;
+    background-color: #f7f7f7;
+    margin: 0 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .value-item h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .value-item p {
+    font-size: 1rem;
+    color: #777;
+    line-height: 1.5;
+  }
+  
+  /* Team Section */
+  .team {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 40px;
+  }
+  
+  .team-member {
+    text-align: center;
+    flex: 1;
+    padding: 20px;
+    background-color: #f7f7f7;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    margin: 0 10px;
+  }
+  
+  .team-member img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 20px;
+  }
+  
+  .team-member h3 {
+    font-size: 1.4rem;
+    color: #333;
+  }
+  
+  .team-member p {
+    font-size: 1rem;
+    color: #777;
+  }
+  
+  /* Call to Action Section */
+  .cta-section {
+    background: #222;
+    color: white;
+    text-align: center;
+    padding: 60px 20px;
+    margin-top: 60px;
+  }
+  
+  .cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .cta-section p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  
+  .cta-button {
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .cta-button:hover {
+    background-color: #388e3c;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .team {
+      flex-direction: column;
+    }
+  
+    .value-item {
+      margin-bottom: 20px;
+    }
+  
+    .core-values {
+      flex-direction: column;
+    }
+  }
+  

@@ -1,0 +1,326 @@
+*{
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.top_banner {
+    background: url('/src/images/banner-1.webp');
+    width: 100%;
+    height: 44rem;
+   background-repeat: no-repeat;
+   background-size: cover;
+   /* background-position-x: 100%; */
+   position: relative;
+   margin-top: 11.3rem;
+}
+.top_banner .banner-content{
+    position: absolute;
+    color: #FFF;
+    top: 1rem;
+    left: 1rem;
+}
+.banner-content h3{
+font-size: 1.3rem;
+font-weight: 200;
+color: #cd1e76;
+}
+.banner-content h4{
+font-size: 4.5rem;
+text-transform: uppercase;
+}
+.banner-content h6{
+font-size: 1rem;
+color:rgb(117, 107, 107);
+margin-bottom: 1.5rem;
+}
+.banner-content .shopNOwBtn{
+font-size: 1.2rem;
+text-decoration: none;
+background-color: #fed700;
+padding: 0.5rem;
+color: #fff;
+font-weight: 600;
+border-radius: 4px;
+transition: 0.5s;
+}
+.banner-content .shopNOwBtn:hover{
+background-color: #c00c0cda;
+transition: 0.5s ;
+}
+.home .trending{
+    padding: 2rem 2.3rem;
+    width: 100%;
+}
+.home .trending .container{
+    max-width: 100%;
+    display: flex;
+}
+.home .trending .container .left-box{
+    width: 75%;
+}
+.home .trending .container .left-box .head{
+    max-width: 100%;
+    display: flex;
+    justify-content: space-between;
+    background: #f6f7f8;
+    padding:0.7rem;
+}
+.home .trending .container .left-box .head h2{
+    text-transform: uppercase;
+    font-size: 1rem;
+}
+.home .trending .container .left-box .head .cate{
+    display: flex;
+    column-gap: 0.6rem;
+}
+.home .trending .container .left-box .head .cate h3{
+    font-size: 1rem;
+    text-transform: capitalize;
+    transition: 0.5s;
+}
+.home .trending .container .left-box .header .cate h3:hover{
+    color: #cd1e76;
+    transition: 0.5s;
+    cursor: pointer;
+}
+.home .trending .container .left-box  .products{
+ max-width: 100%;
+}
+.home .trending .container .left-box  .products .container{
+    width: 100%;
+    display:grid;
+    grid-template-columns: repeat(auto-fill,minmax(250px,1fr));
+    column-gap: 7px;
+}
+ 
+.right-box.container{
+    background-color: #fff;
+}
+.right-box {
+    width: 25%;
+    background: #fff;
+}
+.right-box .container {
+    max-width: 100%;
+}
+.details {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #FFF;
+    padding: 0px 0.5rem;
+}
+
+.right-box .container .testimonial{
+    width: 100%;
+border: 4px solid #f6f7f8;
+}
+.right-box{
+    padding: 0px 1.5rem;
+    margin-left: 20px;
+}
+.right-box .container .testimonial .head{
+   padding: 0.7rem;
+    background: #f6f7f8;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.right-box .container .testimonial .info{
+    margin-top: 0.8rem;
+}
+.right-box .container .testimonial .info h3{
+    text-transform: uppercase;
+    text-align: center;
+    color: #6e6c6c;
+    font-size: 0.9rem;
+}
+.right-box .container .testimonial .info h4{
+    text-transform: uppercase;
+    text-align: center;
+    color: #cd1e76;
+    font-size: 0.9rem;
+}
+.right-box .container .image_box img{ 
+   width: 60%;
+   
+   object-position: center;
+}
+.image_box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.right-box .container .testimonial .info p{
+    text-transform: uppercase;
+    text-align: center;
+    color: #000;
+    font-size: 0.8rem;
+}
+.news-letter .form{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    row-gap: 12px;
+    background-color: #f6f7f8;
+    text-transform: uppercase;
+}
+.news-letter .head h3{
+    text-align: center;
+}
+
+.news-letter input{
+    outline: none;
+    padding: 0.7rem;
+    border: none;
+    border: 1px solid #292828;
+    border-radius: 5px;
+
+}
+.news-letter a{
+    padding: 0.3rem 0.9rem;
+    background: #fed700;
+    outline: none;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    border-radius: 5px;
+}
+.news-letter .container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    column-gap: 0.5rem;
+}
+.news-letter .social  {
+    /* padding: 0.9rem 5.6rem; */
+    cursor: pointer;
+    transition: 0.5s;
+    margin-bottom: 6px;
+}
+.news-letter .social .links{
+   border: 1px solid #6e6c6c;
+   padding: 0.4rem;
+   box-sizing: content-box;
+}
+.news-letter .social .links:hover{
+    background-color:rgb(254, 55, 0);
+    color: #FFF;
+}
+.showMoreBtn{
+    padding: 0.6rem;
+    background-color: #fed700;
+    text-transform: uppercase;
+    border: 1px solid #EEE;
+    cursor: pointer;
+   margin: 0 auto;
+}
+.products{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    row-gap: 0.5rem;
+}
+.banners ,.banners .container{
+    width: 100%;
+    padding:1.3rem;
+}
+.banners .box{
+    overflow: hidden;
+    transition: 0.5s;
+}
+.banners .box img{
+    width: 100%;
+    height: 100%;
+}
+.banners .container .left_box{ 
+    
+    display:grid;
+    grid-template-columns: repeat(2,1fr);
+    gap: 0.5rem;
+}
+.banners .box img:hover{
+    transform: translateY(-7px);
+    transition: 0.5s;
+    cursor: pointer;
+
+}
+.category-products{
+    width: 100%;
+}
+.category-products .head{
+    width: 100%;
+    background:#f6f7f8;
+    padding: 0.3rem 0.4rem;
+}
+.category-products .container{
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3,minmax(210px ,1fr));
+    column-gap: 20px;
+}
+.new-products,.featured-products,.top-products {
+    width: 100%;
+    border: 1px solid #eee;
+    
+}
+@media screen and (max-width:380px) {
+   
+    
+}
+@media  screen and (max-width:580px) {
+
+    .banner-content h4 {
+        font-size: 2.9rem;
+    }
+  .trending .container{
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+     
+  }
+  .banners ,.banners .container{
+    padding: 0rem;
+    column-gap: 0px;
+  }
+
+  .trending .left-box{
+    width: 100%;
+
+   }
+   .trending .right-box{
+    width: 100%;
+   }
+   .testimonial .social .container{
+    flex-direction: row;
+   }
+   body .top_banner{
+    margin-top: 12.2rem;
+    /* margin-bottom: 0rem; */
+    object-fit: cover;
+    /* height: 100%; */
+    height: 22rem;
+   }
+
+    
+}
+@media screen and (max-width:768px) {
+    :root{
+        font-size: 14px;
+    }
+    .top_banner{
+        background-size: contain;
+        height: 35rem;
+    }  
+    .category-products .container{
+        column-gap: 10px;
+    }
+
+}
+
+
+
+

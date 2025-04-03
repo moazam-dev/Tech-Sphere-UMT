@@ -1,0 +1,147 @@
+/* Basic Footer Container */
+.footer {
+    background-color: #f4f4f4;
+    color: #333;
+    padding: 40px 20px;
+    font-family: 'Arial', sans-serif;
+    border-top: 1px solid #ddd;
+  }
+  
+  .footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    max-width: 1200px;
+    margin: 0 auto;
+    gap: 30px;
+  }
+  
+  /* Section Styling */
+  .footer-section {
+    flex: 1;
+    min-width: 250px;
+    margin-bottom: 30px;
+  }
+  
+  .footer-heading {
+    font-size: 1.2rem;
+    color: #555;
+    margin-bottom: 15px;
+    font-weight: 600;
+  }
+  
+  .footer-section p {
+    font-size: 0.9rem;
+    color: #666;
+  }
+  
+  .footer-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .footer-list li {
+    margin: 8px 0;
+  }
+  
+  .footer-link {
+    color: #333;
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s ease;
+  }
+  
+  .footer-link:hover {
+    color: #f0a500;
+  }
+  
+  /* Newsletter Form Styling */
+  .newsletter-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .newsletter-input {
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #fff;
+    color: #333;
+    font-size: 0.9rem;
+  }
+  
+  .newsletter-btn {
+    background-color: #f0a500;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background-color 0.3s ease;
+  }
+  
+  .newsletter-btn:hover {
+    background-color: #e68a00;
+  }
+  
+  /* Social Media Links Styling */
+  .footer-social {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+  }
+  
+  .social-list {
+    list-style-type: none;
+    display: flex;
+    gap: 20px;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .social-icon {
+    color: #333;
+    text-decoration: none;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+  }
+  
+  .social-icon:hover {
+    color: #f0a500;
+  }
+  
+  /* Footer Bottom Section */
+  .footer-bottom {
+    text-align: center;
+    margin-top: 30px;
+    color: #666;
+    font-size: 0.8rem;
+  }
+  
+  /* Responsive Styling */
+  @media (max-width: 768px) {
+    .footer-container {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .footer-section {
+      margin-right: 0;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  
+    .footer-social {
+      justify-content: center;
+    }
+  
+    .newsletter-form {
+      width: 100%;
+      max-width: 400px;
+    }
+  }
+  
