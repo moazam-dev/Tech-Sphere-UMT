@@ -18,6 +18,8 @@ export default function LostFoundLanding() {
   },[])
   const [email, setEmail] = useState('');
    const navigate = useNavigate()
+   const [showGetStarted,setGetStarted]=useState(true);
+
   const styles = {
     container: {
       fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -511,9 +513,20 @@ export default function LostFoundLanding() {
               <a href="#features" style={styles.navLink}>Features</a>
               <a href="#how-it-works" style={styles.navLink}>How It Works</a>
               <a href="#testimonials" style={styles.navLink}>Reviews</a>
-              <button style={styles.btnPrimary} onClick={()=>navigate("/login")}>
+              {   (!localStorage.uID) ?
+                  <button style={styles.btnPrimary} onClick={()=>navigate("/login")}>
                 Get Started
               </button>
+              :
+               (
+                <div style={styles.btnPrimary} onClick={()=>{
+                  localStorage.clear('uID')
+                  setGetStarted(!showGetStarted);
+                }}>logout</div>
+
+               )
+              }
+              
             </div>
           </div>
         </div>
@@ -523,9 +536,6 @@ export default function LostFoundLanding() {
       <section style={styles.hero}>
         <div style={styles.heroBackground}></div>
         <div style={styles.maxWidth}>
-          <div style={styles.heroBadge}>
-            <Award style={{marginRight: '8px', width: '18px', height: '18px'}} /> #1 Lost & Found Platform
-          </div>
           
           <h1 style={styles.heroTitle}>
             Never Lose
@@ -538,8 +548,8 @@ export default function LostFoundLanding() {
           </p>
 
           <div style={styles.heroButtons}>
-            <button onClick={()=>navigate('/lostItemsList')} style={{...styles.btnPrimary, fontSize: '1.1rem', padding: '16px 32px'}}>
-              Start Searching <ArrowRight style={{marginLeft: '8px', width: '20px', height: '20px'}} />
+            <button onClick={()=>navigate('/getStartedOptions')} style={{...styles.btnPrimary, fontSize: '1.1rem', padding: '16px 32px'}}>
+              Get Started <ArrowRight style={{marginLeft: '8px', width: '20px', height: '20px'}} />
             </button>
             <button style={{...styles.btnSecondary, fontSize: '1.1rem', padding: '16px 32px'}}>
               <Smartphone style={{marginRight: '8px', width: '20px', height: '20px'}} /> Download App

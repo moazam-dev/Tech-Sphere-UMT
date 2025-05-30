@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import {useNavigate} from "react-router-dom"
 import { 
   Search, 
   Mail, 
@@ -13,6 +14,7 @@ import {
 } from 'lucide-react';
 
 function Login() {
+  const navigate = useNavigate()
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,10 +23,7 @@ function Login() {
   const [rememberMe, setRememberMe] = useState(false);
 
   // For demo purposes - replace with actual useNavigate
-  const navigate = (path) => {
-    console.log(`Navigating to: ${path}`);
-    alert(`Would navigate to: ${path}`);
-  };
+  
 
   const validateForm = () => {
     const newErrors = {};
@@ -33,6 +32,9 @@ function Login() {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(email)) {
       newErrors.email = 'Email is invalid';
+    }
+    else if (email && !email.includes('@umt.edu.pk')){
+      newErrors.email='use umt domain @umt at the end';
     }
     
     if (!password) {
@@ -46,6 +48,7 @@ function Login() {
   };
 
   const handleLogin = async () => {
+    
     if (!validateForm()) return;
     
     setIsLoading(true);
@@ -72,7 +75,7 @@ function Login() {
         
         // Simulate navigation after delay
         setTimeout(() => {
-          navigate('/userDashboard');
+          navigate('/');
         }, 1500);
       } else {
         setErrors({ general: data.message || 'Login failed' });
