@@ -1,25 +1,35 @@
+import React from 'react';
+import {  Routes, Route , useLocation} from 'react-router-dom';
+import Signup from './components/Signup.jsx';
+import Login from './components/Login.jsx';
+import LostItemReport from './components/lostItemReport.tsx';
+import LostItemList from './components/LostItemList.jsx';
+import ReportFoundItem from './components/FoundItem.jsx';
+import FoundItemList from './components/FoundItemList.jsx';
+import UserDashboard from './components/Dashboard.jsx';
+import Navbar from './components/Navbar.jsx';
+import LandingPage from './components/LandingPage.jsx';
 
-import React ,{useState} from 'react';
-import Navbar from './components/Navbar.tsx';
-import {  BrowserRouter as RouterWrapper } from 'react-router-dom';
-import RouteSetter from './components/Route.tsx';
-import Footer from './components/Footer.tsx';
-import Context from './components/Context.js';
 function App() {
-  const [search,setSearch]=useState("");
-  const[cart,setCart]=useState([]);
+  
+const location = useLocation()
   return (
-
-    <div className="App">
-      <RouterWrapper>
-          <Navbar {...{setSearch}}/>
-              <Context.Provider value={{cart,setCart}}>
-              <RouteSetter {...{search,cart,setCart}} />
-              </Context.Provider>
-          <Footer/>
-      </RouterWrapper>
-    </div>
+    <>
+     {/* {location.pathname==='/'?null:<Navbar/>} */}
+   
+          
+      <Routes >
+        <Route path='/' element={<LandingPage/>}/>
+        <Route path="/signup" element={<Signup />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/lostItemReportPage" element={<LostItemReport />} />
+        <Route path="/lostItemsList" element={<LostItemList />} />
+        <Route path="/FoundItemList" element={<FoundItemList />} />
+        <Route path="/foundItemReportPage" element={<ReportFoundItem />} />
+        <Route path="/userDashboard" element={<UserDashboard />} />
+      </Routes>
     
+    </>
   );
 }
 
