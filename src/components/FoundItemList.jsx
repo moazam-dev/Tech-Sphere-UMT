@@ -80,14 +80,60 @@ const FoundItemList = () => {
     }
   };
 
-  const handleClaim = (itemId) => {
-    alert(`You are attempting to claim item with ID: ${itemId}`);
-    // Implement your claim logic here (e.g., show a modal, API call)
+  const handleClaim = async (itemId, userId, message) => {
+    try {
+      // 1. Submit claim request
+      const claimResponse = await fetch('http://localhost:5000/claim-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          foundItemId: itemId,
+          claimantId: userId,
+          message: message,
+        }),
+      });
+  
+      const claimData = await claimResponse.json();
+  
+      if (!claimResponse.ok) {
+        alert(`Claim failed: ${claimData.message}`);
+        return;
+      }
+  
+      // 2. Send notification to the finder
+      const notifyResponse = await fetch('http://localhost:5000/send-notification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          foundItemId: itemId,
+          senderId: userId,
+          message: message,
+        }),
+      });
+  
+      const notifyData = await notifyResponse.json();
+  
+      if (!notifyResponse.ok) {
+        alert(`Claim created, but notification failed: ${notifyData.message}`);
+      } else {
+        alert('Claim and notification sent successfully!');
+      }
+  
+    } catch (error) {
+      console.error('Error:', error);
+      alert('An unexpected error occurred.');
+    }
   };
+  
+  
 
   const grouped = Array.isArray(items)
     ? items.reduce((acc, item) => {
-      const category = item.itemCategory || 'Uncategorized';
+      const category = item.categoryName || 'Uncategorized';
       if (!acc[category]) acc[category] = [];
       acc[category].push(item);
       return acc;
@@ -664,7 +710,7 @@ const FoundItemList = () => {
                       <div style={styles.cardHeader}>
                         <div style={styles.cardImageContainer}>
                           <img
-                            src={item.imageUrl || '/no-image.png'}
+                            src={item.image || '/no-image.png'}
                             alt={item.itemName}
                             style={styles.cardImage}
                             onError={(e) => {
@@ -767,7 +813,7 @@ const FoundItemList = () => {
                         </button>
 
                         <button
-                          onClick={() => handleClaim(item.id)}
+                          onClick={() => handleClaim(item.id,parseInt(localStorage.uID),"claim for item send")}
                           style={{ ...styles.actionButton, ...styles.claimButton }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.transform = styles.actionButtonHover.transform;

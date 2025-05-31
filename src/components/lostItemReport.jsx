@@ -39,7 +39,7 @@ const LostItemReportForm = () => {
   useEffect(() => {
     // In a real application, this user ID would come from your authentication system
     // (e.g., from a logged-in user's context, Redux store, or an API call).
-    const loggedInUserId = 1; // Example: Set a static integer user ID for demonstration
+    const loggedInUserId = parseInt(localStorage.uID); // Example: Set a static integer user ID for demonstration
     setFormData(prev => ({ ...prev, uID: loggedInUserId }));
   }, []); // Empty dependency array ensures this runs once on component mount
 

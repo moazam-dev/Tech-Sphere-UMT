@@ -2,7 +2,7 @@ const sql = require('mssql');
 
 const config = {
   user: 'abc',
-    password: '1234',
+    password: '1111',
     server: 'NEXERA\\SQLEXPRESS', // Or use your server's IP address or hostname
   database: 'lostandfound',
   options: {

@@ -1,6 +1,6 @@
 // ✅ You said your database.js exposes { sql, connectDB } so let's use only that
 // Final working login route with pure Node.js
-
+const socketIo = require('socket.io');
 const http = require('http');
 const { parse,URL } = require('url');
 const bcrypt = require('bcrypt');
@@ -75,7 +75,7 @@ function sendJSON(res, statusCode, data) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS,PUT',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   });
   res.end(JSON.stringify(data));
@@ -108,7 +108,7 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+      'Access-Control-Allow-Methods': 'POST, GET, OPTIONS,PUT',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     });
     res.end();
@@ -273,7 +273,7 @@ else  if (req.method === 'POST' && url.pathname === '/signup') {
         FROM LostItems l
         INNER JOIN Categories c ON l.categoryID = c.categoryId
         INNER JOIN Users u ON l.userID = u.userid
-        WHERE 1=1
+        WHERE itemFoundStatus=0 and status = 'approved'
       `;
   
       if (search) {
@@ -310,6 +310,7 @@ else  if (req.method === 'POST' && url.pathname === '/signup') {
     }
     return;
   }
+
   else if (req.method === 'POST' && url.pathname === '/api/likes') {
     let body = '';
     req.on('data', chunk => (body += chunk.toString()));
@@ -352,6 +353,7 @@ else  if (req.method === 'POST' && url.pathname === '/signup') {
     });
     return;
   }
+
   else if (req.method === 'POST' && url.pathname === '/api/comments') {
     let body = '';
     req.on('data', chunk => (body += chunk.toString()));
@@ -472,7 +474,7 @@ else  if (req.method === 'POST' && url.pathname === '/signup') {
         FROM FoundItems f
         INNER JOIN Categories c ON f.categoryID = c.categoryId
         INNER JOIN Users u ON f.userID = u.userid
-        WHERE 1=1
+        WHERE itemFoundStatus=0 and status = 'approved'
       `;
   
       if (search) {
@@ -821,6 +823,627 @@ else  if (req.method === 'POST' && url.pathname === '/signup') {
     }
     return;
   }
+  else if (req.method === 'POST' && url.pathname === '/claim-request') {
+    try {
+      const body = await parseJSONBody(req);
+      const { foundItemId, claimantId, message } = body;
+  
+      if (!foundItemId || !claimantId || !message) {
+        sendJSON(res, 400, { message: 'All fields are required' });
+        return;
+      }
+  
+      await connectDB(); // Reuses your DB connection logic
+     const claim= await sql.query(`select * from ClaimRequests where foundItemId =${foundItemId} and 
+      claimantId=${claimantId}
+      `)
+      if(claim.recordset.length > 0){
+        sendJSON(res,408,{message:"you have already made the claim"})
+        return;
+      }
+      await sql.query`
+        INSERT INTO ClaimRequests (foundItemId, claimantId, message)
+        VALUES (${foundItemId}, ${claimantId}, ${message})
+      `;
+  
+      sendJSON(res, 201, { message: 'Claim request submitted successfully' });
+    } catch (error) {
+      console.error('Error inserting claim request:', error);
+      sendJSON(res, 500, { message: 'Server error during claim request' });
+    }
+  }else if (req.method === 'POST' && url.pathname === '/send-notification') {
+    try {
+      const body = await parseJSONBody(req);
+      const { foundItemId, senderId, message } = body;
+  
+      if (!foundItemId || !senderId || !message) {
+        sendJSON(res, 400, { message: 'foundItemId, senderId, and message are required' });
+        return;
+      }
+  
+      await connectDB();
+  
+      // Find the finder (owner) of the found item
+      const result = await sql.query`
+        SELECT userID FROM FoundItems WHERE id = ${foundItemId}
+      `;
+  
+      if (result.recordset.length === 0) {
+        sendJSON(res, 404, { message: 'Found item not found' });
+        return;
+      }
+  
+      const finderId = result.recordset[0].userID;
+  
+      // Insert notification into Notifications table
+      await sql.query`
+        INSERT INTO Notifications (recipientId, senderId, message, isRead, createdAt)
+        VALUES (${finderId}, ${senderId}, ${message}, 0, GETDATE())
+      `;
+  
+      sendJSON(res, 201, { message: 'Notification sent to finder successfully' });
+  
+    } catch (err) {
+      console.error('Error sending notification:', err);
+      sendJSON(res, 500, { message: 'Server error while sending notification' });
+    }
+  }
+// ... (Your existing imports, parseJSONBody, sendJSON, connectDB, and sql connection)
+
+// ... (Your existing Node.js server code, including 'http', 'url', 'sql', 'cors' imports,
+//      and your helper functions like connectDB, parseJSONBody, sendJSON)
+
+// Inside your http.createServer callback, within the main routing logic:
+
+    // ... (Your other else if blocks for /claim-request, /send-notification, etc.)
+
+    // --- User Dashboard Route ---
+   // ... (Your other else if blocks)
+
+    // --- User Dashboard Route ---
+    else if (req.method === 'GET' && url.pathname === '/user/dashboard') {
+      try {
+          const userId = parseInt(url.query.userId);
+
+          if (isNaN(userId)) {
+              sendJSON(res, 400, { message: 'User ID is required and must be a number.' });
+              return;
+          }
+
+          await connectDB(); // Ensure connection pool is available
+
+          // --- FIX: Create a NEW request object for each query ---
+
+          // Fetch Lost Items posted by the user
+           // New request object
+          const myLostItemsResult = await sql.query`
+              SELECT id, itemName, description, createdAt AS lostDate, location, contactInfo, createdAt
+              FROM LostItems
+              WHERE userID = ${userId}
+              ORDER BY createdAt DESC;
+          `;
+          const myLostItems = myLostItemsResult.recordset;
+
+          // Fetch Found Items posted by the user
+         // New request object
+          const myFoundItemsResult = await sql.query`
+              SELECT id, itemName, description, createdAt AS foundDate, location, contactInfo, createdAt
+              FROM FoundItems
+              WHERE userID = ${userId}
+              ORDER BY createdAt DESC;
+          `;
+          const myFoundItems = myFoundItemsResult.recordset;
+
+          // Fetch Claim Requests made by the user
+           // New request object
+          const myClaimRequestsResult = await sql.query`
+              SELECT
+                  CR.claimId,
+                  CR.foundItemId,
+                  CR.message AS claimMessage,
+                  CR.status AS claimStatus,
+                  CR.createdAt AS claimCreatedAt,
+                  FI.itemName AS foundItemName,
+                  FI.description AS foundItemDescription,
+                  FI.location AS foundItemLocation,
+                  FI.createdAt AS foundItemDate
+              FROM
+                  ClaimRequests CR
+              JOIN
+                  FoundItems FI ON CR.foundItemId = FI.id
+              WHERE
+                  CR.claimantId = ${userId}
+              ORDER BY
+                  CR.createdAt DESC;
+          `;
+          const myClaimRequests = myClaimRequestsResult.recordset;
+
+          // Send all collected data in a single JSON response
+          sendJSON(res, 200, {
+              myLostItems,
+              myFoundItems,
+              myClaimRequests
+          });
+
+      } catch (error) {
+          console.error('Error fetching user dashboard data:', error);
+          sendJSON(res, 500, { message: 'Server error while fetching dashboard data.' });
+      }
+  }
+  // This block should be placed inside your `http.createServer(async (req, res) => { ... })` function in `server.js`.
+
+// Make sure you have 'sql' and 'connectDB' imported at the top of your server.js:
+// const { sql, connectDB } = require('./database'); // Adjust path if your file is named dbConfig.js or similar
+
+// --- Admin All Posts Data Route ---
+else if (req.method === 'GET' && url.pathname === '/api/admin/posts') {
+  try {
+      // HACKATHON ADMIN AUTH: Using your specified ADMIN_UID = 6.
+      const ADMIN_UID = 7;
+      const requestingUserId = parseInt(url.query.uID); // Use parsedUrl.query
+
+      if (isNaN(requestingUserId) || requestingUserId !== ADMIN_UID) {
+          sendJSON(res, 403, { message: 'Unauthorized: Admin access required.' });
+          return;
+      }
+
+      // IMPORTANT: Ensure connectDB() provides a pool or connection.
+      // If 'sql' itself is already connected globally, you might not need 'pool' explicitly here.
+      // For robustness, let's assume 'connectDB()' gives a pool.
+      const pool = await connectDB(); 
+
+      // Fetch all Lost Items
+      const requestLost = new sql.Request(pool);
+      const lostItemsResult = await requestLost.query`
+          SELECT
+              id,
+              itemName,
+              description,
+              location,
+              contactInfo,
+              userID AS uID,
+              createdAt,
+              image,
+              status,
+              'lost' AS type
+          FROM LostItems
+          ORDER BY createdAt DESC;
+      `;
+      const lostItems = lostItemsResult.recordset;
+
+      // Fetch all Found Items
+      const requestFound = new sql.Request(pool);
+      const foundItemsResult = await requestFound.query`
+          SELECT
+              id,
+              itemName,
+              description,
+              location,
+              contactInfo,
+              userID AS uID,
+              createdAt,
+              image,
+              status,
+              'found' AS type
+          FROM FoundItems
+          ORDER BY createdAt DESC;
+      `;
+      const foundItems = foundItemsResult.recordset;
+
+      // --- NEW: Fetch all Claim Requests for Admin Dashboard ---
+      const requestClaims = new sql.Request(pool); // Use the pool for consistency
+      const claimRequestsResult = await requestClaims.query`
+          SELECT
+              CR.claimId,
+              CR.foundItemId,
+              CR.claimantId,
+              CR.message AS claimMessage,
+              CR.status AS claimStatus, -- Status of the claim (pending, approved, rejected)
+              CR.createdAt AS claimCreatedAt,
+              FI.itemName AS foundItemName,
+              FI.description AS foundItemDescription,
+              FI.location AS foundItemLocation,
+              FI.contactInfo AS foundItemContact,
+              U.firstName AS claimantFirstName,
+              U.lastName AS claimantLastName,
+              'claim' AS type -- Type for frontend distinction
+          FROM
+              ClaimRequests CR
+          JOIN
+              FoundItems FI ON CR.foundItemId = FI.id
+          JOIN
+              Users U ON CR.claimantId = U.userid
+          ORDER BY CR.createdAt DESC;
+      `;
+      const claimRequests = claimRequestsResult.recordset;
+
+      // --- MODIFIED: Combine all posts and claims ---
+      const allPosts = [...lostItems, ...foundItems, ...claimRequests];
+
+      // Client-side sort remains crucial to combine results from multiple queries into one sorted list
+      allPosts.sort((a, b) => {
+          // Dynamically pick the correct date field for sorting
+          const dateA = a.createdAt || a.claimCreatedAt;
+          const dateB = b.createdAt || b.claimCreatedAt;
+          return new Date(dateB) - new Date(dateA);
+      });
+
+      sendJSON(res, 200, allPosts);
+
+  } catch (error) {
+      console.error('Error fetching all posts and claims for admin dashboard:', error);
+      sendJSON(res, 500, { message: 'Server error while fetching admin posts and claims.' });
+  }
+}// This block should be placed inside your `http.createServer(async (req, res) => { ... })` function in `server.js`.
+// Make sure you have 'sql' and 'connectDB' imported at the top of your server.js.
+
+// --- APPROVE POST Route (CORRECTED: Dynamic Table Name Handling) ---
+else if (req.method === 'POST' && url.pathname.startsWith('/api/admin/posts/') && url.pathname.endsWith('/approve')) {
+  try {
+      const ADMIN_UID = 7; // Your defined admin user ID
+      const requestingUserId = parseInt(url.query.uID); // User ID from query parameter
+
+      // Basic Admin authentication
+      if (isNaN(requestingUserId) || requestingUserId !== ADMIN_UID) {
+          sendJSON(res, 403, { message: 'Unauthorized: Admin access required.' });
+          return;
+      }
+
+      const parts = url.pathname.split('/');
+      const postId = parseInt(parts[4]); // Extract post ID from URL (e.g., /api/admin/posts/123/lost/approve)
+      const itemType = parts[5]; // Extract item type ('lost' or 'found') - Assumes URL is /api/admin/posts/{postId}/{itemType}/approve
+
+      // Validate extracted parameters
+      if (isNaN(postId) || (itemType !== 'lost' && itemType !== 'found')) {
+          sendJSON(res, 400, { message: 'Invalid post ID or item type in URL.' });
+          return;
+      }
+
+      // Ensure the global SQL connection is established.
+      await connectDB();
+
+      const tableName = itemType === 'lost' ? 'LostItems' : 'FoundItems';
+
+      // 1. Update the item status to 'approved'
+      // *** CRITICAL FIX HERE: Dynamically construct the SQL string for the table name ***
+      // You cannot parameterize table names directly with template literals.
+      const updateQuery = `
+          UPDATE ${tableName}
+          SET status = 'approved'
+          WHERE id = @postId;
+      `;
+      // Now, create a request and pass the parameter explicitly
+      const request = new sql.Request(); // Use new sql.Request() without 'pool' if connectDB doesn't return it
+      request.input('postId', sql.Int, postId); // Define the postId parameter
+
+      const updateResult = await request.query(updateQuery); // Execute the query
+
+      if (updateResult.rowsAffected[0] === 0) {
+          // Item not found or already approved
+          sendJSON(res, 404, { message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} item not found or already approved.` });
+      } else {
+          // 2. Fetch the original poster's userID and itemName for notification
+          // Also need to construct this query string dynamically for the tableName
+          const posterQuery = `SELECT userID, itemName FROM ${tableName} WHERE id = @postId;`;
+          const posterRequest = new sql.Request();
+          posterRequest.input('postId', sql.Int, postId);
+          const posterResult = await posterRequest.query(posterQuery);
+
+          const itemOwnerId = posterResult.recordset[0]?.userID;
+          const itemName = posterResult.recordset[0]?.itemName || `Item ID ${postId}`; // Fallback name
+
+          // 3. If item owner found, create and save notification to DB
+          if (itemOwnerId) {
+              const notificationMessage = `Your ${itemType} item "${itemName}" has been approved by an administrator!`;
+
+              // Save notification to DB using sql.query - This can use template literal directly as no dynamic table name
+              await sql.query`
+                  INSERT INTO Notifications (recipientId, senderId, message, isRead, createdAt)
+                  VALUES (${itemOwnerId}, ${ADMIN_UID}, ${notificationMessage}, 0, GETDATE());
+              `;
+              console.log(`Notification saved to DB for user ${itemOwnerId}: ${notificationMessage}`);
+          }
+
+          sendJSON(res, 200, { message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} item ${postId} approved successfully!` });
+      }
+
+  } catch (error) {
+      console.error('Error approving post:', error);
+      // Check if response has already been sent to avoid "Cannot set headers after they are sent"
+      if (!res.headersSent) {
+          sendJSON(res, 500, { message: 'Server error during post approval.' });
+      }
+  }
+}
+// PUT /api/items/:postId/:itemType/archive?uID={uID}
+// POST /api/admin/posts/:postId/:itemType/archive?uID={uID}
+// POST /api/admin/posts/:postId/:itemType/archive?uID={uID}
+else if (req.method === 'POST' && url.pathname.startsWith('/api/admin/posts/') && url.pathname.endsWith('/archive')) {
+  try {
+      const parts = url.pathname.split('/');
+      const postId = parseInt(parts[4]);
+      const itemType = parts[5]; // 'lost' or 'found'
+
+      const requestingUserId = parseInt(url.query.uID);
+
+      if (isNaN(postId) || (itemType !== 'lost' && itemType !== 'found')) {
+          return sendJSON(res, 400, { message: 'Invalid item ID or item type in URL.' });
+      }
+      if (isNaN(requestingUserId)) {
+          return sendJSON(res, 400, { message: 'User ID (uID) is required and must be a number.' });
+      }
+
+      const ADMIN_UID = 7;
+      if (requestingUserId !== ADMIN_UID) {
+          return sendJSON(res, 403, { message: 'Access Denied: Not authorized to perform this action.' });
+      }
+
+      await connectDB(); // Ensure a database connection is active
+
+      const tableName = itemType === 'lost' ? 'LostItems' : 'FoundItems';
+
+      // --- Corrected: Use sql.Request for dynamic table names ---
+      const checkRequest = new sql.Request();
+      checkRequest.input('postId', sql.Int, postId); // Parameterize postId
+      const checkResult = await checkRequest.query(`SELECT id, status FROM ${tableName} WHERE id = @postId;`); // tableName is injected directly
+
+      if (checkResult.recordset.length === 0) {
+          return sendJSON(res, 404, { message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} item not found.` });
+      }
+
+      if (checkResult.recordset[0].status.trim().toLowerCase() === 'archived') {
+          return sendJSON(res, 200, { message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} item ${postId} is already archived.` });
+      }
+
+      // --- Corrected: Use sql.Request for dynamic table names in UPDATE ---
+      const updateRequest = new sql.Request();
+      updateRequest.input('postId', sql.Int, postId); // Parameterize postId
+      const updateResult = await updateRequest.query(`
+          UPDATE ${tableName}
+          SET status = 'archived' 
+          WHERE id = @postId;
+      `);
+
+      sendJSON(res, 200, { message: `${itemType.charAt(0).toUpperCase() + itemType.slice(1)} item ${postId} archived successfully!` });
+
+  } catch (error) {
+      console.error('Error in admin archive route:', error);
+      if (!res.headersSent) {
+          sendJSON(res, 500, { message: 'Server error during item archiving.' });
+      }
+  }
+}
+   // --- Admin All Posts Data Route (with Debugging) ---
+  
+//   // ... (Your existing routes)
+
+// --- GET Notifications for a User (Polling) ---
+// Ensure 'sql' object and 'connectDB' function are available in this scope.
+// e.g., const sql = require('mssql'); // or similar for your setup
+// And your connectDB function should establish the connection pool for 'sql' to use.
+
+// --- GET Notifications Route ---
+else if (req.method === 'GET' && url.pathname === '/api/notifications') {
+  try {
+      const userId = parseInt(url.query.uID); // Get user ID from query parameter
+
+      if (isNaN(userId)) {
+          sendJSON(res, 400, { message: 'User ID is required and must be a number.' });
+          return;
+      }
+
+      // Ensure the global SQL connection is established.
+      // The sql.query method will implicitly use the connected pool.
+      await connectDB();
+
+      // Fetch notifications for the recipientId, ordered by createdAt (newest first)
+      // Using sql.query directly with template literal parameters
+      const result = await sql.query`
+          SELECT
+              N.id,
+              N.message,
+              N.isRead,
+              N.createdAt,
+              N.senderId,
+              S.firstName AS senderFirstName,
+              S.lastName AS senderLastName
+          FROM Notifications AS N
+          JOIN Users AS S ON N.senderId = S.userid
+          WHERE N.recipientId = ${userId}
+          ORDER BY N.createdAt DESC;
+      `;
+
+      sendJSON(res, 200, result.recordset);
+  } catch (err) {
+      console.error('Error fetching notifications:', err);
+      sendJSON(res, 500, { message: 'Server error fetching notifications.' });
+  }
+}
+
+// --- PUT Mark Notification as Read Route ---
+else if (req.method === 'PUT' && url.pathname.startsWith('/api/notifications/')) {
+  try {
+      // Correctly extract ID from URL path (e.g., /api/notifications/123 -> parts[3] is '123')
+      // Ensure you're using 'url.pathname' not just 'pathname'
+      const parts = url.pathname.split('/');
+      const notificationId = parseInt(parts[3]);
+      const userId = parseInt(url.query.uID); // Get user ID from query parameter (for authorization)
+
+      if (isNaN(notificationId) || isNaN(userId)) {
+          sendJSON(res, 400, { message: 'Invalid notification ID or User ID.' });
+          return;
+      }
+
+      // Ensure the global SQL connection is established.
+      await connectDB();
+
+      // Update the isRead status to 1 (true), ensuring the notification belongs to the specified user
+      // Using sql.query directly with template literal parameters
+      const updateResult = await sql.query`
+          UPDATE Notifications
+          SET isRead = 1
+          WHERE id = ${notificationId} AND recipientId = ${userId};
+      `;
+
+      if (updateResult.rowsAffected[0] === 0) {
+          // Notification not found for this user, or was already marked as read
+          sendJSON(res, 404, { message: 'Notification not found or not authorized to update.' });
+      } else {
+          sendJSON(res, 200, { message: 'Notification marked as read successfully.' });
+      }
+
+  } catch (err) {
+      console.error('Error marking notification as read:', err);
+      // Check if response has already been sent to avoid "Cannot set headers after they are sent"
+      if (!res.headersSent) {
+          sendJSON(res, 500, { message: 'Server error marking notification as read.' });
+      }
+  }
+}
+
+// --- NEW: Handle Claim Action (Approve/Reject) ---
+else if (req.method === 'POST' && url.pathname.startsWith('/api/admin/claims/')) {
+  try {
+      const parts = url.pathname.split('/');
+      // Expected URL format: /api/admin/claims/{claimId}/{action}?uID=ADMIN_UID
+      const claimId = parseInt(parts[4]); // Get claimId from /api/admin/claims/CLAIM_ID/action
+      const action = parts[5]; // Get action (e.g., 'approve', 'reject')
+
+      // HACKATHON ADMIN AUTH: Using your specified ADMIN_UID = 6.
+      const ADMIN_UID = 7;
+      const requestingUserId = parseInt(url.query.uID);
+
+      if (isNaN(requestingUserId) || requestingUserId !== ADMIN_UID) {
+          sendJSON(res, 403, { message: 'Unauthorized: Admin access required.' });
+          return;
+      }
+
+      if (isNaN(claimId)) {
+          sendJSON(res, 400, { message: 'Invalid Claim ID provided.' });
+          return;
+      }
+
+      let newStatus;
+      let notificationMessageToClaimant = '';
+      let notificationMessageToFinder = '';
+
+      if (action === 'approve') {
+          newStatus = 'approved';
+      } else if (action === 'reject') {
+          newStatus = 'rejected';
+      } else {
+          sendJSON(res, 400, { message: 'Invalid action. Must be "approve" or "reject".' });
+          return;
+      }
+
+      const pool = await connectDB();
+      const request = new sql.Request(pool);
+
+      // Start a transaction for atomicity (optional but good practice for multi-step operations)
+      // await request.query('BEGIN TRANSACTION;'); // Uncomment if you want to use transactions
+
+      // 1. Update the status of the claim request
+      const updateResult = await request
+          .input('claimId', sql.Int, claimId)
+          .input('newStatus', sql.NVarChar, newStatus)
+          .query`
+              UPDATE ClaimRequests
+              SET status = @newStatus
+              WHERE claimId = @claimId AND status = 'pending'; -- Only update if currently pending
+          `;
+
+      if (updateResult.rowsAffected[0] === 0) {
+          // await request.query('ROLLBACK;'); // Uncomment if using transactions
+          // Claim not found, or it was not in 'pending' status (e.g., already approved/rejected)
+          sendJSON(res, 404, { message: `Claim ID ${claimId} not found or is no longer pending.` });
+          return;
+      }
+
+      // 2. Fetch relevant details for notification
+      const claimDetailsResult = await request
+          .input('claimIdDetail', sql.Int, claimId)
+          .query`
+              SELECT
+                  cr.claimantId,
+                  cr.foundItemId,
+                  fi.userID AS finderId, -- CORRECTED: Using userID from FoundItems table
+                  fi.itemName AS foundItemName
+              FROM ClaimRequests cr
+              JOIN FoundItems fi ON cr.foundItemId = fi.id
+              WHERE cr.claimId = @claimIdDetail;
+          `;
+
+      if (claimDetailsResult.recordset.length === 0) {
+          // This should ideally not happen if the update was successful, but good to check
+          // await request.query('ROLLBACK;'); // Uncomment if using transactions
+          sendJSON(res, 404, { message: 'Could not retrieve claim details for notification.' });
+          return;
+      }
+
+      const claimDetails = claimDetailsResult.recordset[0];
+      const { claimantId, foundItemId, finderId, foundItemName } = claimDetails;
+
+      // 3. Construct and insert notifications based on action
+      if (action === 'approve') {
+          notificationMessageToClaimant = `Your claim for '${foundItemName}' (Item ID: ${foundItemId}) has been APPROVED! Please contact the item finder (User ID: ${finderId}) to arrange pickup.`;
+          notificationMessageToFinder = `A claim for your found item '${foundItemName}' (Item ID: ${foundItemId}) has been APPROVED by the admin. The claimant's User ID is ${claimantId}. Please arrange the return of the item.`;
+
+          // Notify Claimant
+          await request
+              .input('recipientIdClaimant', sql.Int, claimantId)
+              .input('senderIdAdmin', sql.Int, ADMIN_UID)
+              .input('messageClaimant', sql.NVarChar, notificationMessageToClaimant)
+              .query`
+                  INSERT INTO Notifications (recipientId, senderId, message)
+                  VALUES (@recipientIdClaimant, @senderIdAdmin, @messageClaimant);
+              `;
+
+          // Notify Finder
+          await request
+              .input('recipientIdFinder', sql.Int, finderId)
+              .input('senderIdAdmin2', sql.Int, ADMIN_UID)
+              .input('messageFinder', sql.NVarChar, notificationMessageToFinder)
+              .query`
+                  INSERT INTO Notifications (recipientId, senderId, message)
+                  VALUES (@recipientIdFinder, @senderIdAdmin2, @messageFinder);
+              `;
+
+      } else if (action === 'reject') { // action === 'reject'
+          notificationMessageToClaimant = `Your claim for '${foundItemName}' (Item ID: ${foundItemId}) has been REJECTED. If you believe this is an error, please review the item details or contact support.`;
+          notificationMessageToFinder = `A claim for your found item '${foundItemName}' (Item ID: ${foundItemId}) has been REJECTED by the admin. Your item is still listed as found.`;
+
+          // Notify Claimant
+          await request
+              .input('recipientIdClaimantRejected', sql.Int, claimantId)
+              .input('senderIdAdminRejected', sql.Int, ADMIN_UID)
+              .input('messageClaimantRejected', sql.NVarChar, notificationMessageToClaimant)
+              .query`
+                  INSERT INTO Notifications (recipientId, senderId, message)
+                  VALUES (@recipientIdClaimantRejected, @senderIdAdminRejected, @messageClaimantRejected);
+              `;
+
+          // Notify Finder (optional, but good for transparency)
+          await request
+              .input('recipientIdFinderRejected', sql.Int, finderId)
+              .input('senderIdAdminRejected2', sql.Int, ADMIN_UID)
+              .input('messageFinderRejected', sql.NVarChar, notificationMessageToFinder)
+              .query`
+                  INSERT INTO Notifications (recipientId, senderId, message)
+                  VALUES (@recipientIdFinderRejected, @senderIdAdminRejected2, @messageFinderRejected);
+              `;
+      }
+
+      // await request.query('COMMIT;'); // Uncomment if using transactions
+      sendJSON(res, 200, { message: `Claim ID ${claimId} successfully marked as ${newStatus} and notifications sent.` });
+
+  } catch (error) {
+      // await request.query('ROLLBACK;'); // Uncomment if using transactions
+      console.error(`Error processing claim action or sending notification:`, error);
+      sendJSON(res, 500, { message: 'Server error processing claim action and notification.' });
+  }
+}
+
+// ... (Your other routes)
   else {
     
   }

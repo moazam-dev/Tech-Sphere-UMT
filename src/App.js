@@ -10,6 +10,7 @@ import UserDashboard from './components/Dashboard.jsx';
 import Navbar from './components/Navbar.jsx';
 import LandingPage from './components/LandingPage.jsx';
 import ItemsMenuComponent from './components/getStartedOptions.jsx';
+import AdminDashboard from './components/AdminDashboard.jsx';
 function App() {
   
 const location = useLocation()
@@ -19,6 +20,8 @@ const location = useLocation()
    
           
       <Routes >
+
+        <Route path='/adminDashboard' element={<AdminDashboard/>}/>
         <Route path='/getStartedOptions' element={<ItemsMenuComponent/>}/>
         <Route path='/' element={<LandingPage/>}/>
         <Route path="/signup" element={<Signup />} />

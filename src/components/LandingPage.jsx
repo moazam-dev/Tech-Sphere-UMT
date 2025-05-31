@@ -650,7 +650,7 @@ export default function LostFoundLanding() {
             <div style={styles.logoIconContainer} className="logo-icon-container-animated">
               <Search size={20} />
             </div>
-            <span style={styles.logoTextSpan} className="logo-text-span-animated">FindIt</span>
+            <span style={styles.logoTextSpan} className="logo-text-span-animated">Findr</span>
           </div>
 
           {/* Centered navigation links */}
@@ -680,13 +680,42 @@ export default function LostFoundLanding() {
                 </button>
               </>
             ) : (
-              <button 
-                style={{...styles.btnSecondary, padding: '10px 20px'}} // Slightly smaller logout
-                className="btn-secondary-hoverable" 
-                onClick={handleLogout}
-              >
-                Logout
-              </button>
+              <>
+              
+              <a href='https://9000-firebase-studio-1748616902992.cluster-zkm2jrwbnbd4awuedc2alqxrpk.cloudworkstations.dev'
+                  style={styles.btnOutline} // Register button with outline style
+                  className="btn-outline-hoverable"
+                  onClick={() =>{
+                  
+                  } }// Assuming a register route
+                > 
+                  AI Compare
+                </a>
+              <button
+                  style={styles.btnOutline} // Register button with outline style
+                  className="btn-outline-hoverable"
+                  onClick={() =>{
+                    (localStorage.uID==='7')?
+                    navigate("/adminDashboard")
+                    :
+                      navigate("/userDashboard") 
+                  } }// Assuming a register route
+                > 
+                  Dashboard
+                </button>
+                <button 
+                  style={styles.btnPrimary} 
+                  className="btn-primary-hoverable" 
+                  onClick={() =>{ 
+                    navigate("/")
+                    localStorage.clear('uID')
+                    setIsUserLoggedIn(!isUserLoggedIn)
+
+                  }}
+                >
+                  Logout
+                </button>
+                </>
             )}
           </div>
         </div>
@@ -822,7 +851,7 @@ export default function LostFoundLanding() {
 
       <footer style={styles.footer}>
         <div style={styles.contentMaxWidth}> {/* Use contentMaxWidth here */}
-          <p>&copy; {new Date().getFullYear()} FindIt. All rights reserved. Built with <span role="img" aria-label="love">❤️</span> for the community.</p>
+          <p>&copy; {new Date().getFullYear()} Findr. All rights reserved. Built with <span role="img" aria-label="love">❤️</span> for the community.</p>
         </div>
       </footer>
     </div>
